@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma de Treinamentos — Usina Santa Adélia</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap');
+:root {
+  --bg:#0d1117; --surface:#161b22; --card:#1c2128; --border:#30363d;
+  --accent:#f0a500; --accent2:#e05a00; --danger:#da3633; --success:#2ea043;
+  --text:#e6edf3; --muted:#8b949e; --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+
+/* HEADER */
+header{width:100%;background:var(--surface);border-bottom:2px solid var(--accent);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:14px;}
+.header-icon{width:40px;height:40px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.header-text h1{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;color:var(--text);letter-spacing:.5px;}
+.header-text p{font-size:.7rem;color:var(--muted);margin-top:1px;}
+.header-user{display:none;align-items:center;gap:10px;font-size:.8rem;color:var(--muted);}
+.header-user span{color:var(--text);font-weight:600;}
+.header-user.show{display:flex;}
+.btn-logout{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 12px;font-size:.75rem;cursor:pointer;transition:all .2s;}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger);}
+
+/* WRAPPER */
+.wrapper{width:100%;max-width:780px;padding:28px 20px 60px;}
+
+/* SCREENS */
+.screen{display:none;}.screen.active{display:block;}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;}
+
+/* LOGIN */
+.login-brand{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+.login-brand-icon{width:52px;height:52px;background:var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;}
+.login-brand-text h2{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;color:var(--text);}
+.login-brand-text p{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.login-divider{height:1px;background:var(--border);margin:0 0 22px;}
+.login-title{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;}
+
+/* FIELDS */
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.field-wrap{position:relative;}
+.field input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;transition:border-color .2s;}
+.field input:focus{outline:none;border-color:var(--accent);}
+.field input::placeholder{color:var(--muted);}
+.toggle-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:4px;line-height:1;}
+.toggle-pw:hover{color:var(--text);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;border:none;border-radius:7px;padding:12px 24px;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .15s,transform .1s;width:100%;justify-content:center;margin-top:8px;}
+.btn:hover{opacity:.88;}.btn:active{transform:scale(.98);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-success{background:var(--success);color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-sm{width:auto;padding:8px 18px;font-size:.85rem;margin-top:0;}
+
+/* SHAKE */
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.shake{animation:shake .4s ease;}
+
+/* SECTION TITLE */
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;color:var(--accent);margin-bottom:4px;}
+.section-sub{color:var(--muted);font-size:.85rem;margin-bottom:22px;line-height:1.5;}
+
+/* RANKING */
+.ranking-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.tab-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:7px 18px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.tab-btn.active{background:var(--accent);border-color:var(--accent);color:#000;}
+.ranking-table{width:100%;border-collapse:collapse;font-size:.85rem;}
+.ranking-table th{background:var(--surface);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.ranking-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);}
+.ranking-table tr:last-child td{border-bottom:none;}
+.ranking-table tr:hover td{background:var(--surface);}
+.rank-pos{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;color:var(--muted);text-align:center;}
+.rank-pos.gold{color:#f0a500;}.rank-pos.silver{color:#8b949e;}.rank-pos.bronze{color:#c9682a;}
+.rank-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;}
+.rank-badge.aprovado{background:#0d2116;color:var(--success);}
+.rank-me{background:#1c2a1c !important;}
+.rank-me td{color:var(--success) !important;}
+.pct-bar-wrap{display:flex;align-items:center;gap:8px;}
+.pct-bar{height:6px;background:var(--border);border-radius:3px;flex:1;overflow:hidden;}
+.pct-bar-fill{height:100%;background:var(--accent);border-radius:3px;}
+
+/* TREINAMENTOS */
+.training-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:24px;}
+.training-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;align-items:center;gap:16px;transition:border-color .2s;}
+.training-card:hover:not(.locked){border-color:var(--accent);}
+.training-card.locked{opacity:.6;}
+.training-card.done{border-left:3px solid var(--success);}
+.training-card.failed{border-left:3px solid var(--danger);}
+.tc-icon{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;background:var(--card);}
+.tc-body{flex:1;}
+.tc-title{font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:3px;}
+.tc-desc{font-size:.78rem;color:var(--muted);line-height:1.4;}
+.tc-badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px;display:inline-block;}
+.tc-badge.aprovado{background:#0d2116;color:var(--success);}
+.tc-badge.reprovado{background:#2a1012;color:var(--danger);}
+.tc-badge.novo{background:#1a1f2e;color:#58a6ff;}
+.tc-action{flex-shrink:0;}
+
+/* VIDEO */
+.video-wrap{position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:8px;overflow:hidden;margin-bottom:18px;}
+.video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+.video-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:10;}
+.video-overlay.hide{display:none;}
+.video-progress-wrap{margin-bottom:14px;}
+.video-progress-label{font-size:.78rem;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
+.video-progress-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.video-progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .5s;}
+.video-info{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:10px 14px;font-size:.82rem;color:var(--muted);margin-bottom:14px;}
+.video-info strong{color:var(--text);}
+.btn-start-quiz{opacity:.4;cursor:not-allowed;}
+.btn-start-quiz.ready{opacity:1;cursor:pointer;}
+
+/* CONFIRM */
+.confirmed-box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:16px;margin-bottom:20px;font-size:.88rem;}
+.cb-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;font-weight:700;}
+.cb-row{display:flex;gap:8px;align-items:baseline;margin-bottom:6px;}
+.cb-row:last-child{margin-bottom:0;}
+.cb-key{color:var(--muted);min-width:90px;}
+.cb-val{color:var(--text);font-weight:600;}
+
+/* QUIZ */
+.quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.q-counter{font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+.q-counter span{color:var(--accent);font-size:1rem;}
+.progress-track{height:4px;background:var(--border);border-radius:4px;margin-bottom:24px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .4s ease;}
+.timer-ring{position:relative;width:64px;height:64px;flex-shrink:0;}
+.timer-ring svg{transform:rotate(-90deg);}
+.timer-ring circle.track{fill:none;stroke:var(--border);stroke-width:5;}
+.timer-ring circle.fill{fill:none;stroke:var(--accent);stroke-width:5;stroke-dasharray:157;stroke-dashoffset:0;transition:stroke-dashoffset .9s linear,stroke .3s;stroke-linecap:round;}
+.timer-ring circle.fill.warning{stroke:var(--accent2);}
+.timer-ring circle.fill.danger{stroke:var(--danger);}
+.timer-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:var(--text);}
+.q-text{font-size:1rem;font-weight:500;line-height:1.6;color:var(--text);margin-bottom:20px;}
+.options{display:flex;flex-direction:column;gap:10px;}
+.option{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:border-color .15s,background .15s;user-select:none;}
+.option:hover:not(.disabled){border-color:var(--accent);background:#20272e;}
+.option.selected{border-color:var(--accent);background:#20272e;}
+.option.correct{border-color:var(--success);background:#0d2116;}
+.option.wrong{border-color:var(--danger);background:#2a1012;}
+.option.disabled{cursor:default;pointer-events:none;}
+.opt-letter{min-width:28px;height:28px;background:var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--muted);flex-shrink:0;}
+.option.selected .opt-letter{background:var(--accent);color:#000;}
+.option.correct .opt-letter{background:var(--success);color:#fff;}
+.option.wrong .opt-letter{background:var(--danger);color:#fff;}
+.opt-text{font-size:.88rem;line-height:1.5;color:var(--text);}
+.timeout-badge{background:var(--danger);color:#fff;font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;letter-spacing:.5px;}
+.feedback{margin-top:16px;background:var(--surface);border-left:3px solid var(--accent);border-radius:4px;padding:12px 16px;font-size:.83rem;line-height:1.5;color:var(--muted);display:none;}
+.feedback.show{display:block;}
+.feedback strong{color:var(--text);}
+.btn-next{margin-top:20px;}
+
+/* USER CHIP */
+.user-chip{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:10px;margin-bottom:18px;font-size:.8rem;color:var(--muted);}
+.user-chip span{color:var(--text);font-weight:600;}
+
+/* RESULTS */
+.results-title{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:700;color:var(--accent);text-align:center;margin-bottom:4px;}
+.results-sub{text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:28px;}
+.score-ring-wrap{display:flex;justify-content:center;margin-bottom:24px;}
+.score-ring{position:relative;width:140px;height:140px;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring circle.track{fill:none;stroke:var(--border);stroke-width:10;}
+.score-ring circle.fill{fill:none;stroke:var(--accent);stroke-width:10;stroke-dasharray:376;stroke-linecap:round;}
+.score-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-pct{font-family:'Barlow Condensed',sans-serif;font-size:2.4rem;font-weight:700;line-height:1;color:var(--text);}
+.score-pct-label{font-size:.7rem;color:var(--muted);}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:700;}
+.stat-val.green{color:var(--success);}.stat-val.red{color:var(--danger);}.stat-val.amber{color:var(--accent);}
+.stat-label{font-size:.7rem;color:var(--muted);margin-top:4px;}
+.result-verdict{text-align:center;font-size:1rem;font-weight:600;padding:12px;border-radius:8px;margin-bottom:20px;}
+.verdict-approved{background:#0d2116;color:var(--success);border:1px solid var(--success);}
+.verdict-failed{background:#2a1012;color:var(--danger);border:1px solid var(--danger);}
+.review-list{margin-bottom:24px;}
+.review-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;font-size:.83rem;display:flex;align-items:flex-start;gap:10px;}
+.review-icon{flex-shrink:0;font-size:1rem;}
+.review-text{line-height:1.5;color:var(--muted);}
+.review-text strong{color:var(--text);display:block;margin-bottom:2px;}
+.result-actions{display:flex;flex-direction:column;gap:10px;}
+
+@media(max-width:500px){.card{padding:20px 14px;}.stats-grid{grid-template-columns:1fr 1fr;}.ranking-table th:nth-child(4),.ranking-table td:nth-child(4){display:none;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-icon">⚡</div>
+    <div class="header-text">
+      <h1>Plataforma de Treinamentos</h1>
+      <p>Usina Santa Adélia · SSMA</p>
+    </div>
+  </div>
+  <div class="header-user" id="header-user">
+    👤 <span id="header-nome"></span>
+    <span style="color:var(--border)">|</span>
+    <span id="header-setor" style="color:var(--muted);font-size:.75rem;"></span>
+    <button class="btn-logout" onclick="doLogout()">Sair</button>
+  </div>
+</header>
+
+<div class="wrapper">
+
+<!-- ══════════ SCREEN: LOGIN ══════════ -->
+<div class="screen active" id="screen-login">
+  <div class="card">
+    <div class="login-brand">
+      <div class="login-brand-icon">⚡</div>
+      <div class="login-brand-text">
+        <h2>Usina Santa Adélia</h2>
+        <p>Sistema de Avaliação de Segurança — SSMA</p>
+      </div>
+    </div>
+    <div class="login-divider"></div>
+    <div class="login-title">Acesso ao sistema</div>
+    <div class="field">
+      <label>Número do Crachá</label>
+      <input type="text" id="login-cracha" placeholder="Ex: 102001" maxlength="10" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <div class="field-wrap">
+        <input type="password" id="login-senha" placeholder="••••••••" maxlength="20" onkeydown="if(event.key==='Enter') doLogin()">
+        <button class="toggle-pw" type="button" onclick="togglePw()">👁</button>
+      </div>
+    </div>
+    <div id="login-error" style="color:var(--danger);font-size:.83rem;margin-bottom:10px;display:none;"></div>
+    <button class="btn" id="btn-login" onclick="doLogin()">🔐 Entrar</button>
+  </div>
+</div>
+
+<!-- ══════════ SCREEN: DASHBOARD ══════════ -->
+<div class="screen" id="screen-dashboard">
+
+  <!-- RANKING -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="section-title">🏆 Ranking</div>
+    <div class="section-sub">Top 10 colaboradores com maior percentual médio de acerto.</div>
+    <div class="ranking-tabs">
+      <button class="tab-btn active" onclick="switchRanking('geral',this)">🌐 Geral</button>
+      <button class="tab-btn" onclick="switchRanking('setor',this)" id="tab-setor">Meu Setor</button>
+    </div>
+    <div id="ranking-container">
+      <div style="text-align:center;padding:24px;color:var(--muted);font-size:.85rem;">⏳ Carregando ranking...</div>
+    </div>
+  </div>
+
+  <!-- MEUS TREINAMENTOS -->
+  <div class="card">
+    <div class="section-title">📚 Meus Treinamentos</div>
+    <div class="section-sub">Selecione um treinamento para assistir ao vídeo e realizar a avaliação.</div>
+    <div class="training-grid" id="training-grid">
+      <div style="text-align:center;padding:24px;color:var(--muted);font-size:.85rem;">⏳ Carregando treinamentos...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ SCREEN: VÍDEO ══════════ -->
+<div class="screen" id="screen-video">
+  <div class="user-chip" id="video-user-chip"></div>
+  <div class="card">
+    <div class="section-title" id="video-titulo">Treinamento</div>
+    <div class="section-sub" id="video-desc"></div>
+
+    <div class="video-wrap" id="video-wrap">
+      <div id="player"></div>
+      <div class="video-overlay" id="video-overlay">
+        <div style="font-size:3rem;">▶</div>
+        <div style="color:#fff;font-size:.9rem;font-weight:600;">Clique para iniciar o vídeo</div>
+        <div style="color:rgba(255,255,255,.6);font-size:.78rem;">Assista ao vídeo completo para liberar a avaliação</div>
+      </div>
+    </div>
+
+    <div class="video-progress-wrap">
+      <div class="video-progress-label">
+        <span>Progresso do vídeo</span>
+        <span id="video-pct-label">0%</span>
+      </div>
+      <div class="video-progress-track">
+        <div class="video-progress-fill" id="video-progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="video-info">
+      <strong>⚠ Atenção:</strong> Assista ao vídeo completo. O botão de avaliação será liberado automaticamente ao final.
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline btn-sm" style="width:auto;flex:0" onclick="showScreen('screen-dashboard')">← Voltar</button>
+      <button class="btn btn-start-quiz" id="btn-start-quiz" onclick="goToConfirm()">
+        🔒 Assista ao vídeo para liberar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SCREEN: CONFIRMAÇÃO ══════════ -->
+<div class="screen" id="screen-confirm">
+  <div class="card">
+    <div class="section-title">Pronto para avaliar?</div>
+    <div class="section-sub">Confirme seus dados e inicie a avaliação. São <strong>10 questões</strong> com <strong>2 minutos</strong> cada.</div>
+
+    <div class="confirmed-box">
+      <div class="cb-label">Dados do avaliado</div>
+      <div class="cb-row"><span class="cb-key">Nome</span><span class="cb-val" id="cb-nome">—</span></div>
+      <div class="cb-row"><span class="cb-key">CPF</span><span class="cb-val" id="cb-cpf">—</span></div>
+      <div class="cb-row"><span class="cb-key">Crachá</span><span class="cb-val" id="cb-cracha">—</span></div>
+      <div class="cb-row"><span class="cb-key">Setor</span><span class="cb-val" id="cb-setor">—</span></div>
+      <div class="cb-row"><span class="cb-key">Treinamento</span><span class="cb-val" id="cb-treinamento">—</span></div>
+    </div>
+
+    <button class="btn" onclick="startQuiz()">▶ Iniciar Avaliação</button>
+  </div>
+</div>
+
+<!-- ══════════ SCREEN: QUIZ ══════════ -->
+<div class="screen" id="screen-quiz">
+  <div class="user-chip" id="user-chip"></div>
+  <div class="card">
+    <div class="quiz-header">
+      <div class="q-counter">Questão <span id="q-num">1</span> de 10</div>
+      <div class="timer-ring">
+        <svg viewBox="0 0 60 60" width="64" height="64">
+          <circle class="track" cx="30" cy="30" r="25"/>
+          <circle class="fill" id="timer-circle" cx="30" cy="30" r="25"/>
+        </svg>
+        <div class="timer-label" id="timer-label">2:00</div>
+      </div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div id="timeout-badge" class="timeout-badge" style="display:none;">⏰ Tempo esgotado — questão computada como errada</div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="options-container"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn btn-next" id="btn-next" onclick="nextQuestion()" style="display:none;">Próxima questão →</button>
+  </div>
+</div>
+
+<!-- ══════════ SCREEN: RESULTADO ══════════ -->
+<div class="screen" id="screen-result">
+  <div class="card">
+    <div class="results-title">Resultado da Avaliação</div>
+    <div class="results-sub" id="result-date"></div>
+    <div class="user-chip" id="result-user-chip"></div>
+
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg viewBox="0 0 130 130" width="140" height="140">
+          <circle class="track" cx="65" cy="65" r="60"/>
+          <circle class="fill" id="result-ring" cx="65" cy="65" r="60" stroke-dashoffset="376"/>
+        </svg>
+        <div class="score-ring-label">
+          <div class="score-pct" id="result-pct">0%</div>
+          <div class="score-pct-label">acertos</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-val green" id="res-correct">0</div><div class="stat-label">Corretas</div></div>
+      <div class="stat-box"><div class="stat-val red" id="res-wrong">0</div><div class="stat-label">Incorretas</div></div>
+      <div class="stat-box"><div class="stat-val amber">10</div><div class="stat-label">Total</div></div>
+    </div>
+
+    <div class="result-verdict" id="result-verdict"></div>
+    <div class="review-list" id="review-list"></div>
+
+    <div id="email-status" style="text-align:center;font-size:.82rem;margin-bottom:12px;min-height:18px;color:var(--muted);"></div>
+    <div class="result-actions">
+      <button class="btn btn-success" onclick="generatePDF()">⬇ Gerar PDF do Resultado</button>
+      <button class="btn btn-outline" onclick="showScreen('screen-dashboard')">← Voltar aos Treinamentos</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrapper -->
+
+<!-- YouTube IFrame API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzCUfTcGlyLfFvYPV3o30JKbuWtjz8Zwn_v8NljkJRLvwOtUJ2MZ_bf_FeQU4MPnoJQJw/exec';
+(function(){ emailjs.init({ publicKey: 'uoFqlmwss68XbkV_M' }); })();
+
+// ═══════════════════════════════════════════════════
+// QUESTÕES — T001 Energia Zero
+// ═══════════════════════════════════════════════════
+const QUESTIONS_DB = {
+  'T001': [
+    { text:"Qual é o principal objetivo da Norma de Procedimento NP.AD.00.03.0053 – Abertura de Linhas e Equipamentos?", options:["Aumentar a produtividade das equipes de manutenção durante paradas programadas.","Proteger pessoas, instalações e o meio ambiente de liberações indevidas de energias perigosas durante a abertura de linhas e equipamentos.","Regulamentar o uso de ferramentas manuais em ambiente industrial.","Estabelecer prazos para emissão de Permissões de Trabalho na usina."], correct:1, feedback:"O objetivo da NP é estabelecer requisitos mínimos para proteger pessoas, instalações e o meio ambiente de liberações indevidas de energias perigosas, prevenindo acidentes como queimaduras, respingos, projeções e ignição de inflamáveis." },
+    { text:"Um equipamento classificado como CLASSE A é aquele que:", options:["Contém exclusivamente água fria ou caldo sem pressão e temperatura elevada.","Nunca apresentou contato com produtos químicos ou vapor.","Contém ou conteve vapor, líquidos aquecidos, fluidos sob pressão, produtos químicos, etanol ou outros inflamáveis capazes de causar lesões.","Está fora de operação há mais de 30 dias e completamente drenado."], correct:2, feedback:"CLASSE A engloba equipamentos ou linhas com vapor, líquidos aquecidos, fluidos sob pressão, produtos químicos de tratamento, etanol ou inflamáveis — qualquer condição que possa causar queimaduras, respingos, corrosão, impacto ou ignição." },
+    { text:"Qual documento formal autoriza a execução de tarefas de risco envolvendo espaços confinados?", options:["Permissão de Trabalho (PT)","Análise de Segurança da Tarefa (AST)","Permissão de Trabalho Especial (PTE)","Permissão de Trabalho para Espaço Confinado (PET)"], correct:3, feedback:"A PET (Permissão de Trabalho para Espaço Confinado) é o documento formal que autoriza tarefas de risco em espaços confinados, enquanto a PT abrange outros trabalhos de risco e a PTE envolve eletricidade." },
+    { text:"Qual é a responsabilidade do 'Dono do Equipamento / Área' antes de liberar um equipamento para intervenção?", options:["Apenas emitir a Permissão de Trabalho e aguardar a equipe de manutenção.","Identificar as energias perigosas e confirmar a condição de energia zero antes da liberação.","Solicitar à SSMA que realize o bloqueio e a drenagem do equipamento.","Verificar somente a temperatura do equipamento antes da abertura."], correct:1, feedback:"O Dono do Equipamento / Área deve identificar as energias perigosas, executar ou garantir o bloqueio, isolamento, drenagem, purga e despressurização, e confirmar a condição de energia zero antes de liberar o equipamento para intervenção." },
+    { text:"Durante a abertura inicial de flanges, qual é a prática segura correta para o desaperto dos parafusos?", options:["Afrouxar todos os parafusos simultaneamente para liberar a pressão de forma uniforme.","Iniciar o desaperto pelo lado mais próximo ao corpo do executante para melhor controle.","Realizar o desaperto pelo lado oposto ao corpo do executante, mantendo-se fora do raio de possível projeção.","Utilizar ar comprimido para acelerar o processo de remoção dos parafusos."], correct:2, feedback:"O desaperto dos parafusos deve ser realizado pelo lado oposto ao corpo do executante, mantendo-se fora do possível raio de projeção, pois pode haver liberação de energia residual, fluido remanescente ou movimento inesperado das partes." },
+    { text:"Quais são os EPIs mínimos obrigatórios para a abertura de linhas ou equipamentos, além dos EPIs básicos da área?", options:["Apenas capacete e luvas de raspa de couro.","Protetor facial acoplado ao capacete, Conjunto Tyvek® ou macacão de proteção, e luvas de PVC com botas de borracha.","Óculos de segurança e cinto de segurança tipo paraquedista.","Apenas proteção respiratória e óculos ampla visão."], correct:1, feedback:"Os EPIs mínimos obrigatórios são: protetor facial acoplado ao capacete, conjunto Tyvek® ou macacão de saneamento/proteção química e/ou térmica, e luvas de PVC e botas de borracha compatíveis com o fluido ou condição do equipamento." },
+    { text:"O que é o 'Teste de Energia Zero' e quando deve ser realizado?", options:["É uma simulação computacional feita antes do planejamento da manutenção.","É a verificação das condições de segurança do equipamento ou linha antes da abertura, confirmando ausência de pressão, temperatura segura, sem fluxo ou retorno hidráulico e eliminação de energias residuais.","É realizado apenas para equipamentos elétricos, antes de religar a instalação.","É a medição da temperatura ambiente ao redor do equipamento após a drenagem completa."], correct:1, feedback:"O Teste de Energia Zero é a verificação das condições de segurança antes da abertura, confirmando ausência de pressão, temperatura segura para intervenção, inexistência de fluxo ou retorno hidráulico e eliminação de energias residuais." },
+    { text:"Em linhas ou áreas que contenham etanol, qual fator adicional deve ser avaliado antes da abertura?", options:["Apenas a temperatura do ambiente externo.","O risco de inflamabilidade e ignição, incluindo o controle de fontes de ignição e ventilação adequada.","Somente a cor do fluido para identificação visual de contaminação.","O peso total do fluido para planejar o descarte."], correct:1, feedback:"Em áreas com etanol ou outros inflamáveis devem ser avaliados adicionalmente os riscos de inflamabilidade e ignição. Medidas como ventilação adequada, controle de fontes de ignição e aterramento devem ser adotadas, além dos requisitos padrões." },
+    { text:"Qual é a postura correta do executante ao abrir ou desentupir um dreno?", options:["Posicionar-se frontalmente ao dreno para ter melhor visibilidade do processo.","Manter-se posicionado acima do dreno, segurando a ferramenta com as duas mãos.","Posicionar-se lateralmente ao ponto de abertura, nunca de frente, e nunca projetar tronco, rosto ou membros à frente ou abaixo do dreno.","Utilizar ar comprimido para desobstruir o dreno antes de posicionar o corpo."], correct:2, feedback:"O executante deve manter-se fora do eixo de possível projeção do dreno, nunca posicionando tronco, rosto ou membros à frente ou abaixo do dreno. A abertura deve ser feita 'de lado e para trás', nunca de forma frontal." },
+    { text:"Quais práticas são EXPRESSAMENTE PROIBIDAS durante o desentupimento de drenos, conforme a NP?", options:["Usar luvas de PVC e botas de borracha durante a atividade.","Realizar a atividade com o corpo projetado frontalmente, sem bloqueio efetivo e sem teste formal de energia zero; além de usar hastes improvisadas, golpes mecânicos ou ar comprimido para liberar obstruções.","Utilizar proteção facial e comunicar ao supervisor sobre riscos identificados.","Emitir AST e PT antes do início da atividade."], correct:1, feedback:"É terminantemente proibido: desentupir drenos com o corpo frontalmente projetado, sem bloqueio efetivo ou sem teste de energia zero; utilizar hastes improvisadas, golpes mecânicos ou ar comprimido para liberar obstruções; e executar sem AST e PT válida." }
+  ]
+};
+
+// ═══════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════
+let userName='', userCPF='', userCracha='', userSetor='';
+let treinamentos=[], realizados={};
+let currentTreinamento=null; // {id, titulo, descricao, video_id}
+let QUESTIONS=[];
+let currentQ=0, answers=[], timerInterval=null, timeLeft=120;
+const TOTAL_TIME=120;
+let ytPlayer=null, videoWatched=false, videoProgressInterval=null;
+let rankingGeral=[], rankingSetor=[], rankingMode='geral';
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function postSheets(payload){
+  return fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>{});
+}
+
+function logEvento(treinamento, evento){
+  postSheets({action:'log', cracha:userCracha, nome:userName, setor:userSetor, treinamento, evento});
+}
+
+function nowStr(){
+  return new Date().toLocaleDateString('pt-BR')+' às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ═══════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════
+function togglePw(){
+  const i=document.getElementById('login-senha');
+  i.type=i.type==='password'?'text':'password';
+}
+
+async function doLogin(){
+  const cracha=document.getElementById('login-cracha').value.trim();
+  const senha=document.getElementById('login-senha').value.trim();
+  const err=document.getElementById('login-error');
+  const btn=document.getElementById('btn-login');
+  err.style.display='none';
+  if(!cracha||!senha){err.textContent='Preencha o crachá e a senha.';err.style.display='block';return;}
+  btn.textContent='⏳ Verificando...';btn.disabled=true;
+  try{
+    const params=new URLSearchParams({action:'login',cracha,senha});
+    const res=await fetch(`${SHEETS_URL}?${params}`);
+    const data=await res.json();
+    if(data.status==='ok'){
+      userName=data.nome.replace(/\b\w/g,c=>c.toUpperCase());
+      userCPF=data.cpf; userCracha=String(data.cracha); userSetor=data.setor||'—';
+      treinamentos=data.treinamentos||[];
+      realizados=data.realizados||{};
+      // header
+      document.getElementById('header-nome').textContent=userName;
+      document.getElementById('header-setor').textContent=userSetor;
+      document.getElementById('header-user').classList.add('show');
+      document.getElementById('tab-setor').textContent='🏭 '+userSetor;
+      // carrega dashboard
+      renderTrainings();
+      loadRanking();
+      showScreen('screen-dashboard');
+    } else {
+      err.textContent=data.msg||'Crachá ou senha incorretos.';
+      err.style.display='block';
+      const card=document.querySelector('#screen-login .card');
+      card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
+    }
+  } catch(e){
+    err.textContent='⚠ Falha de conexão. Verifique sua internet.';err.style.display='block';
+  } finally{btn.textContent='🔐 Entrar';btn.disabled=false;}
+}
+
+function doLogout(){
+  userName='';userCPF='';userCracha='';userSetor='';
+  treinamentos=[];realizados={};currentTreinamento=null;
+  document.getElementById('header-user').classList.remove('show');
+  document.getElementById('login-cracha').value='';
+  document.getElementById('login-senha').value='';
+  document.getElementById('login-error').style.display='none';
+  clearInterval(timerInterval);
+  if(ytPlayer){try{ytPlayer.destroy();}catch(e){}ytPlayer=null;}
+  showScreen('screen-login');
+}
+
+// ═══════════════════════════════════════════════════
+// DASHBOARD — TREINAMENTOS
+// ═══════════════════════════════════════════════════
+function renderTrainings(){
+  const grid=document.getElementById('training-grid');
+  if(!treinamentos.length){
+    grid.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);">Nenhum treinamento liberado para você no momento.</div>';
+    return;
+  }
+  grid.innerHTML='';
+  treinamentos.forEach(t=>{
+    const r=realizados[t.id];
+    const aprovado=r&&r.resultado==='APROVADO';
+    const reprovado=r&&r.resultado==='REPROVADO';
+    const card=document.createElement('div');
+    card.className='training-card'+(aprovado?' done':reprovado?' failed':'');
+
+    let badge='';
+    if(aprovado) badge=`<span class="tc-badge aprovado">✅ Aprovado — ${r.percentual}</span>`;
+    else if(reprovado) badge=`<span class="tc-badge reprovado">❌ Reprovado — ${r.percentual} — Refazer</span>`;
+    else badge=`<span class="tc-badge novo">🆕 Novo</span>`;
+
+    let actionBtn='';
+    if(aprovado){
+      actionBtn=`<button class="btn btn-outline btn-sm" disabled style="opacity:.5;width:auto">✅ Concluído</button>`;
+    } else {
+      actionBtn=`<button class="btn btn-sm" style="width:auto" onclick='selectTreinamento(${JSON.stringify(t)})'>▶ Iniciar</button>`;
+    }
+
+    card.innerHTML=`
+      <div class="tc-icon">📋</div>
+      <div class="tc-body">
+        <div class="tc-title">${t.titulo}</div>
+        <div class="tc-desc">${t.descricao}</div>
+        ${badge}
+      </div>
+      <div class="tc-action">${actionBtn}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function selectTreinamento(t){
+  currentTreinamento=t;
+  videoWatched=false;
+  // tela de vídeo
+  document.getElementById('video-titulo').textContent=t.titulo;
+  document.getElementById('video-desc').textContent=t.descricao;
+  document.getElementById('video-user-chip').innerHTML=`👤 <span>${userName}</span> &nbsp;|&nbsp; ${userSetor} &nbsp;|&nbsp; Crachá: <span>${userCracha}</span>`;
+  document.getElementById('video-progress-fill').style.width='0%';
+  document.getElementById('video-pct-label').textContent='0%';
+  const btnQ=document.getElementById('btn-start-quiz');
+  btnQ.classList.remove('ready');
+  btnQ.textContent='🔒 Assista ao vídeo para liberar';
+  document.getElementById('video-overlay').classList.remove('hide');
+  showScreen('screen-video');
+  initYouTubePlayer(t.video_id);
+  logEvento(t.titulo,'Treinamento selecionado');
+}
+
+// ═══════════════════════════════════════════════════
+// RANKING
+// ═══════════════════════════════════════════════════
+async function loadRanking(){
+  try{
+    const [rg, rs]=await Promise.all([
+      fetch(`${SHEETS_URL}?action=ranking`).then(r=>r.json()),
+      fetch(`${SHEETS_URL}?action=ranking&setor=${encodeURIComponent(userSetor)}`).then(r=>r.json())
+    ]);
+    rankingGeral=rg.ranking||[];
+    rankingSetor=rs.ranking||[];
+    renderRanking();
+  } catch(e){
+    document.getElementById('ranking-container').innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.83rem;">Não foi possível carregar o ranking.</div>';
+  }
+}
+
+function switchRanking(mode, btn){
+  rankingMode=mode;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRanking();
+}
+
+function renderRanking(){
+  const lista=rankingMode==='geral'?rankingGeral:rankingSetor;
+  const container=document.getElementById('ranking-container');
+  if(!lista.length){
+    container.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.83rem;">Nenhum resultado registrado ainda.</div>';
+    return;
+  }
+  const medals=['🥇','🥈','🥉'];
+  const posClass=['gold','silver','bronze'];
+  let html=`<table class="ranking-table"><thead><tr>
+    <th style="width:40px;text-align:center">#</th>
+    <th>Colaborador</th>
+    <th>Setor</th>
+    <th>Avaliações</th>
+    <th>Média</th>
+  </tr></thead><tbody>`;
+  lista.forEach((u,i)=>{
+    const isMe=String(u.cracha)===String(userCracha);
+    const pos=i<3?`<span class="rank-pos ${posClass[i]}">${medals[i]}</span>`:`<span class="rank-pos">${u.pos}</span>`;
+    const bar=`<div class="pct-bar-wrap"><div class="pct-bar"><div class="pct-bar-fill" style="width:${u.media}%;background:${u.media>=70?'var(--success)':'var(--danger)'}"></div></div><strong>${u.media}%</strong></div>`;
+    html+=`<tr class="${isMe?'rank-me':''}">
+      <td style="text-align:center">${pos}</td>
+      <td><strong>${u.nome}</strong>${isMe?' <span style="font-size:.7rem;color:var(--accent)">(você)</span>':''}</td>
+      <td style="color:var(--muted);font-size:.82rem">${u.setor||'—'}</td>
+      <td style="text-align:center;color:var(--muted)">${u.total}</td>
+      <td>${bar}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  container.innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════
+// YOUTUBE PLAYER
+// ═══════════════════════════════════════════════════
+function onYouTubeIframeAPIReady(){ /* aguarda selectTreinamento */ }
+
+function initYouTubePlayer(videoId){
+  clearInterval(videoProgressInterval);
+  if(ytPlayer){try{ytPlayer.destroy();}catch(e){}}
+  document.getElementById('player').innerHTML='';
+  ytPlayer=new YT.Player('player',{
+    videoId:videoId,
+    playerVars:{rel:0,modestbranding:1,playsinline:1},
+    events:{
+      onReady: ()=>{ document.getElementById('video-overlay').addEventListener('click',()=>{ document.getElementById('video-overlay').classList.add('hide'); ytPlayer.playVideo(); logEvento(currentTreinamento.titulo,'Vídeo iniciado'); },{ once:true }); },
+      onStateChange: (e)=>{
+        if(e.data===YT.PlayerState.PLAYING){
+          videoProgressInterval=setInterval(updateVideoProgress,2000);
+        } else {
+          clearInterval(videoProgressInterval);
+        }
+        if(e.data===YT.PlayerState.ENDED){ onVideoEnded(); }
+      }
+    }
+  });
+}
+
+function updateVideoProgress(){
+  if(!ytPlayer||typeof ytPlayer.getCurrentTime!=='function') return;
+  try{
+    const cur=ytPlayer.getCurrentTime();
+    const dur=ytPlayer.getDuration();
+    if(!dur) return;
+    const pct=Math.min(100,Math.round((cur/dur)*100));
+    document.getElementById('video-progress-fill').style.width=pct+'%';
+    document.getElementById('video-pct-label').textContent=pct+'%';
+    if(pct>=95 && !videoWatched){ onVideoEnded(); }
+  } catch(e){}
+}
+
+function onVideoEnded(){
+  if(videoWatched) return;
+  videoWatched=true;
+  clearInterval(videoProgressInterval);
+  document.getElementById('video-progress-fill').style.width='100%';
+  document.getElementById('video-pct-label').textContent='100%';
+  const btn=document.getElementById('btn-start-quiz');
+  btn.classList.add('ready');
+  btn.textContent='▶ Iniciar Avaliação';
+  logEvento(currentTreinamento.titulo,'Vídeo concluído');
+}
+
+function goToConfirm(){
+  if(!videoWatched) return;
+  document.getElementById('cb-nome').textContent=userName;
+  document.getElementById('cb-cpf').textContent=userCPF;
+  document.getElementById('cb-cracha').textContent=userCracha;
+  document.getElementById('cb-setor').textContent=userSetor;
+  document.getElementById('cb-treinamento').textContent=currentTreinamento.titulo;
+  showScreen('screen-confirm');
+}
+
+// ═══════════════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════════════
+function startQuiz(){
+  QUESTIONS=QUESTIONS_DB[currentTreinamento.id]||[];
+  if(!QUESTIONS.length){alert('Questões não encontradas para este treinamento.');return;}
+  answers=[];currentQ=0;
+  logEvento(currentTreinamento.titulo,'Avaliação iniciada');
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q=QUESTIONS[currentQ];
+  document.getElementById('user-chip').innerHTML=`👤 <span>${userName}</span> &nbsp;|&nbsp; ${userSetor} &nbsp;|&nbsp; <span>${currentTreinamento.titulo}</span>`;
+  document.getElementById('q-num').textContent=currentQ+1;
+  document.getElementById('progress-fill').style.width=(currentQ/QUESTIONS.length*100)+'%';
+  document.getElementById('timeout-badge').style.display='none';
+  document.getElementById('q-text').textContent=q.text;
+  const container=document.getElementById('options-container');
+  container.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const div=document.createElement('div');
+    div.className='option';div.id='opt-'+i;
+    div.innerHTML=`<div class="opt-letter">${l}</div><div class="opt-text">${q.options[i]}</div>`;
+    div.onclick=()=>selectOption(i);
+    container.appendChild(div);
+  });
+  const fb=document.getElementById('feedback');
+  fb.classList.remove('show');fb.innerHTML='';
+  const btn=document.getElementById('btn-next');
+  btn.style.display='none';
+  btn.textContent=currentQ===QUESTIONS.length-1?'✔ Finalizar a Avaliação':'Próxima questão →';
+  startTimer();
+}
+
+function startTimer(){
+  timeLeft=TOTAL_TIME;updateTimerUI();clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{timeLeft--;updateTimerUI();if(timeLeft<=0){clearInterval(timerInterval);onTimeout();}},1000);
+}
+
+function updateTimerUI(){
+  const m=Math.floor(timeLeft/60),s=timeLeft%60;
+  document.getElementById('timer-label').textContent=`${m}:${s.toString().padStart(2,'0')}`;
+  const offset=157*(1-timeLeft/TOTAL_TIME);
+  const c=document.getElementById('timer-circle');
+  c.style.strokeDashoffset=offset;
+  c.classList.remove('warning','danger');
+  if(timeLeft<=30)c.classList.add('danger');
+  else if(timeLeft<=60)c.classList.add('warning');
+}
+
+function onTimeout(){
+  document.getElementById('timeout-badge').style.display='inline-block';
+  lockOptions(-1,true);
+  answers.push({selected:null,correct:false,timeout:true});
+  showFeedback();
+  document.getElementById('btn-next').style.display='flex';
+}
+
+function selectOption(idx){
+  if(document.querySelector('.option.disabled')) return;
+  clearInterval(timerInterval);
+  const ok=idx===QUESTIONS[currentQ].correct;
+  answers.push({selected:idx,correct:ok,timeout:false});
+  lockOptions(idx,false);showFeedback();
+  document.getElementById('btn-next').style.display='flex';
+}
+
+function lockOptions(selected,timeout){
+  const correct=QUESTIONS[currentQ].correct;
+  document.querySelectorAll('.option').forEach((o,i)=>{
+    o.classList.add('disabled');
+    if(i===correct)o.classList.add('correct');
+    if(!timeout&&i===selected&&selected!==correct)o.classList.add('wrong');
+    if(!timeout&&i===selected)o.classList.add('selected');
+  });
+}
+
+function showFeedback(){
+  const fb=document.getElementById('feedback');
+  fb.innerHTML=`<strong>Explicação:</strong> ${QUESTIONS[currentQ].feedback}`;
+  fb.classList.add('show');
+}
+
+function nextQuestion(){
+  currentQ++;
+  if(currentQ>=QUESTIONS.length) showResults();
+  else renderQuestion();
+}
+
+// ═══════════════════════════════════════════════════
+// RESULTADO
+// ═══════════════════════════════════════════════════
+function showResults(){
+  clearInterval(timerInterval);
+  showScreen('screen-result');
+  const correct=answers.filter(a=>a.correct).length;
+  const wrong=QUESTIONS.length-correct;
+  const pct=Math.round((correct/QUESTIONS.length)*100);
+  const approved=pct>=70;
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('pt-BR')+' às '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+  document.getElementById('result-date').textContent=`Realizado em ${dateStr} · ${currentTreinamento.titulo}`;
+  document.getElementById('result-user-chip').innerHTML=`👤 <span>${userName}</span> &nbsp;|&nbsp; CPF: <span>${userCPF}</span> &nbsp;|&nbsp; Crachá: <span>${userCracha}</span> &nbsp;|&nbsp; <span>${userSetor}</span>`;
+
+  const ring=document.getElementById('result-ring');
+  ring.style.strokeDashoffset=376;ring.style.stroke=approved?'#2ea043':'#da3633';
+  setTimeout(()=>{ring.style.transition='stroke-dashoffset 1s ease';ring.style.strokeDashoffset=376*(1-pct/100);},100);
+
+  document.getElementById('result-pct').textContent=pct+'%';
+  document.getElementById('res-correct').textContent=correct;
+  document.getElementById('res-wrong').textContent=wrong;
+
+  const verdict=document.getElementById('result-verdict');
+  if(approved){verdict.className='result-verdict verdict-approved';verdict.textContent='✅ APROVADO — Parabéns! Você demonstrou conhecimento satisfatório.';}
+  else{verdict.className='result-verdict verdict-failed';verdict.textContent='❌ REPROVADO — Percentual abaixo de 70%. Revise o material e tente novamente.';}
+
+  const letters=['A','B','C','D'];
+  const reviewList=document.getElementById('review-list');
+  reviewList.innerHTML='';
+  answers.forEach((ans,i)=>{
+    const q=QUESTIONS[i];
+    const icon=ans.correct?'✅':(ans.timeout?'⏰':'❌');
+    const st=ans.correct?'Correta':(ans.timeout?'Tempo esgotado':'Incorreta');
+    const div=document.createElement('div');div.className='review-item';
+    const given=ans.selected!==null?`${letters[ans.selected]}) ${q.options[ans.selected]}`:'Sem resposta';
+    div.innerHTML=`<div class="review-icon">${icon}</div><div class="review-text"><strong>Q${i+1} — ${st}</strong>${q.text.slice(0,80)}...${!ans.correct?`<br><span style="font-size:.78rem;color:var(--muted)">Sua resposta: ${given}<br>Correta: ${letters[q.correct]}) ${q.options[q.correct]}</span>`:''}  </div>`;
+    reviewList.appendChild(div);
+  });
+
+  // atualiza realizados localmente
+  realizados[currentTreinamento.id]={percentual:pct+'%',resultado:approved?'APROVADO':'REPROVADO'};
+
+  const statusEl=document.getElementById('email-status');
+  statusEl.textContent='⏳ Registrando resultado...';statusEl.style.color='var(--muted)';
+
+  const linhas=answers.map((ans,i)=>{
+    const q=QUESTIONS[i];const st=ans.correct?'CORRETA':(ans.timeout?'TEMPO':'ERRADA');
+    const r=ans.selected!==null?`${letters[ans.selected]}) ${q.options[ans.selected]}`:'Sem resposta';
+    return `Q${i+1} [${st}] ${q.text.slice(0,60)}... | ${r}`;
+  }).join('\n');
+
+  // Registra no Sheets
+  postSheets({
+    action:'registro', datahora:dateStr, nome:userName, cpf:userCPF,
+    cracha:userCracha, setor:userSetor, corretas:correct, incorretas:wrong,
+    percentual:pct+'%', resultado:approved?'APROVADO':'REPROVADO',
+    detalhamento:linhas, treinamento_id:currentTreinamento.id,
+    treinamento_titulo:currentTreinamento.titulo
+  });
+
+  // Envia e-mail
+  const templateParams={
+    nome:userName, cpf:userCPF, cracha:userCracha, setor:userSetor,
+    treinamento:currentTreinamento.titulo, data:dateStr,
+    percentual:pct+'%', corretas:correct, total:QUESTIONS.length,
+    veredicto:approved?'✅ APROVADO':'❌ REPROVADO', detalhamento:linhas
+  };
+  emailjs.send('service_sescz0d','template_yy8i3ld',templateParams)
+    .then(()=>{ statusEl.textContent='✅ Resultado registrado e enviado por e-mail.';statusEl.style.color='var(--success)'; })
+    .catch(()=>{ statusEl.textContent='⚠ Resultado registrado. Falha no envio do e-mail.';statusEl.style.color='var(--accent2)'; });
+}
+
+// ═══════════════════════════════════════════════════
+// PDF
+// ═══════════════════════════════════════════════════
+function generatePDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const correct=answers.filter(a=>a.correct).length;
+  const pct=Math.round((correct/QUESTIONS.length)*100);
+  const approved=pct>=70;
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('pt-BR')+' às '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const W=210,M=18;
+
+  doc.setFillColor(13,17,23);doc.rect(0,0,W,38,'F');
+  doc.setFillColor(240,165,0);doc.rect(0,36,W,2,'F');
+  doc.setTextColor(240,165,0);doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text('AVALIAÇÃO DE SEGURANÇA',M,14);
+  doc.setFontSize(9);doc.setTextColor(180,180,180);
+  doc.text(currentTreinamento.titulo,M,21);
+  doc.text('Usina Santa Adélia · SSMA',M,27);
+  doc.setTextColor(120,120,120);doc.setFontSize(8);
+  doc.text(`Realizado em: ${dateStr}`,M,33);
+
+  let y=50;
+  doc.setFillColor(240,243,247);doc.roundedRect(M,y,W-2*M,34,3,3,'F');
+  doc.setFillColor(240,165,0);doc.rect(M,y,3,34,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(100,100,100);
+  doc.text('DADOS DO AVALIADO',M+7,y+7);
+  doc.setFontSize(10);doc.setTextColor(30,30,30);
+  doc.text(`Nome: ${userName}`,M+7,y+14);
+  doc.text(`CPF: ${userCPF}`,M+7,y+21);
+  doc.text(`Crachá: ${userCracha}`,M+80,y+21);
+  doc.text(`Setor: ${userSetor}`,M+7,y+28);
+  doc.text(`Treinamento: ${currentTreinamento.titulo}`,M+60,y+28);
+  y+=42;
+
+  const bc=approved?[46,160,67]:[218,54,51];
+  doc.setFillColor(...bc);doc.roundedRect(M,y,W-2*M,36,3,3,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(22);
+  doc.text(`${pct}%`,M+10,y+16);doc.setFontSize(10);doc.text('de acerto',M+10,y+23);
+  doc.setFontSize(13);doc.text(approved?'APROVADO':'REPROVADO',M+50,y+14);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);
+  doc.text(`${correct} acertos de 10 questões`,M+50,y+22);
+  doc.text('Mínimo para aprovação: 70% (7 questões)',M+50,y+29);
+  y+=44;
+
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(60,60,60);
+  doc.text('DETALHAMENTO DAS QUESTÕES',M,y);y+=5;
+
+  const letters=['A','B','C','D'];
+  answers.forEach((ans,i)=>{
+    const q=QUESTIONS[i];const isOk=ans.correct;
+    const status=isOk?'CORRETA':(ans.timeout?'TEMPO':'ERRADA');
+    const color=isOk?[46,160,67]:[218,54,51];
+    doc.setFillColor(isOk?235:252,isOk?248:235,isOk?238:235);
+    const rowH=14;doc.roundedRect(M,y,W-2*M,rowH,2,2,'F');
+    doc.setFillColor(...color);doc.rect(M,y,2,rowH,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...color);
+    doc.text(`Q${i+1}`,M+5,y+6);doc.text(status,M+13,y+6);
+    doc.setFont('helvetica','normal');doc.setTextColor(50,50,50);
+    const qs=q.text.length>75?q.text.slice(0,75)+'...':q.text;
+    doc.text(qs,M+5,y+11);
+    if(!isOk){doc.setTextColor(150,50,50);doc.setFontSize(7);doc.text(`Correta: ${letters[q.correct]}. ${q.options[q.correct].slice(0,60)}...`,M+35,y+6);}
+    y+=rowH+2;if(y>260){doc.addPage();y=20;}
+  });
+
+  doc.setFillColor(240,165,0);doc.rect(0,282,W,1,'F');
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(130,130,130);
+  doc.text(`Documento gerado automaticamente · ${dateStr} · Usina Santa Adélia`,M,288);
+  doc.text(`${userName} · CPF: ${userCPF} · Crachá: ${userCracha} · ${userSetor}`,M,293);
+
+  doc.save(`avaliacao_${currentTreinamento.id}_${userName.replace(/\s+/g,'_')}_${now.toISOString().slice(0,10)}.pdf`);
+}
+</script>
+</body>
+</html>
